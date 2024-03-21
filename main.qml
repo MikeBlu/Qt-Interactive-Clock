@@ -3,14 +3,15 @@ import QtQuick.Window 2.15
 Window {
   width: 800
   height: 800
+  maximumWidth: 800
   visible: true
   title: qsTr("Hello World")
   color: "gainsboro"
 
   Rectangle {
-    id: clock
+    id: clockBase
     anchors.centerIn: parent
-    width: parent.width - 100
+    width: parent.width - (parent.width * 0.1)
     height: width
     color: "white"
     border.color: "black"
@@ -49,6 +50,27 @@ Window {
       anchors.centerIn: parent
       color: "black"
       radius: 360
+    }
+
+    Repeater {
+      id: rep
+      model: 60
+
+      delegate: Rectangle {
+        height: (parent.width / 12)
+        width: 6
+        color: "black"
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.top: parent.top
+        transform: Rotation {
+          origin.y: parent.height / 2
+          origin.x: width / 2
+          angle: (360 / rep.model) * index
+        }
+        Component.onCompleted: {
+          console.log(Item.Bottom)
+        }
+      }
     }
   }
 }
