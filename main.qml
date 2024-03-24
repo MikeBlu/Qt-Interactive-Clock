@@ -28,15 +28,15 @@ Window {
       color: "grey"
       transform: Rotation {
         origin.y: minuteHand.height / 2
-        angle: 90
+        angle: -90
       }
       Rectangle {
         id: minuteControl
+        x: parent.width / 1.2
+        y: 0
         z: 1
         width: (parent.parent.height / 10)
         height: width
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.left: parent.right
         color: "transparent"
         border.color: "grey"
         radius: 360
@@ -60,15 +60,16 @@ Window {
       color: "grey"
       transform: Rotation {
         origin.y: hourHand.height / 2
-        angle: 0
+        angle: -90
       }
+      radius: 40
       Rectangle {
         id: hourControl
+        x: parent.width / 1.5
+        y: 0
         z: 1
         width: (parent.parent.height / 10)
         height: width
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.left: parent.right
         color: "transparent"
         border.color: "grey"
         radius: 360
