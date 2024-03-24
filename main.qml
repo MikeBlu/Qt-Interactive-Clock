@@ -17,6 +17,7 @@ Window {
     border.color: "black"
     border.width: parent.width / 25
     radius: 360
+    clip: true
 
     Rectangle {
       id: minuteHand
@@ -75,12 +76,20 @@ Window {
         radius: 360
         MouseArea {
           anchors.fill: parent
-          acceptedButtons: Qt.LeftButton | Qt.RightButton
-          onClicked: mouse => {
-                       console.log("hour control clicked")
-                     } // handle Click-and-drag
+          drag.target: parent
         }
       }
+    }
+
+    Rectangle {
+      id: probe
+      x: clockBase.x
+      y: clockBase.y
+      z: 2
+      width: 5
+      height: 5
+      color: "red"
+      radius: 360
     }
 
     Rectangle {
@@ -94,10 +103,21 @@ Window {
     }
 
     Repeater {
-      id: rep
+      id: pins
       model: 60
 
       delegate: Rectangle {
+        Text {
+          color: "black"
+          anchors.top: parent.bottom
+          anchors.horizontalCenter: parent.horizontalCenter
+          font.pixelSize: parent.width * 5
+          Component.onCompleted: () => {
+                                   if (index % 5 == 0) {
+                                     text = (index == 0) ? ("12") : (index / 5)
+                                   }
+                                 }
+        }
         height: (index % 5 == 0) ? (parent.width / 10) : (parent.width / 12)
         width: (index % 5 == 0) ? (parent.width / 100) : (parent.width / 130)
         color: "black"
@@ -106,7 +126,7 @@ Window {
         transform: Rotation {
           origin.y: parent.height / 2
           origin.x: width / 2
-          angle: (360 / rep.model) * index
+          angle: (360 / pins.model) * index
         }
       }
     }
