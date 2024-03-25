@@ -38,7 +38,7 @@ Window {
 
       let dotProduct = (handVector["xVec"] * baseHandVector["xVec"])
           + (handVector["yVec"] * baseHandVector["yVec"])
-      let angle = Math.acos(// -cos is expensive, sheesh
+      let angle = Math.acos(// cos^(-1) is expensive, sheesh
                             dotProduct / (handVector["normalized"] * baseHandVector["normalized"]))
       angle = angle * (180 / Math.PI)
       return (handVector["yVec"] > 0) ? (-angle) : (angle)
@@ -61,8 +61,8 @@ Window {
     }
     Rectangle {
       id: minuteControl
-      x: minuteHand.x + minuteHand.width
-      y: minuteHand.y - (minuteHand.height / 2)
+      x: pivotPoint.x
+      y: pivotPoint.y - (minuteHand.width)
       z: 1
       width: (parent.parent.height / 10)
       height: width
@@ -72,6 +72,11 @@ Window {
                     minuteHand.rotationAngle = parent.getHandAngleFromCenter(
                       x + (width / 2), y + (height / 2))
                   }
+      Component.onCompleted: () => {
+                               minuteHand.rotationAngle = parent.getHandAngleFromCenter(
+                                 x + (width / 2), y + (height / 2))
+                             }
+
       radius: 360
       MouseArea {
         anchors.fill: parent
@@ -97,8 +102,8 @@ Window {
     }
     Rectangle {
       id: hourControl
-      x: hourHand.x + hourHand.width
-      y: hourHand.y - (hourHand.height / 2)
+      x: pivotPoint.x
+      y: pivotPoint.y - (hourHand.width)
       z: 1
       width: (parent.height / 10)
       height: width
@@ -108,6 +113,10 @@ Window {
                     hourHand.rotationAngle = parent.getHandAngleFromCenter(
                       x + (width / 2), y + (height / 2))
                   }
+      Component.onCompleted: () => {
+                               hourHand.rotationAngle = parent.getHandAngleFromCenter(
+                                 x + (width / 2), y + (height / 2))
+                             }
       radius: 360
       MouseArea {
         anchors.fill: parent
