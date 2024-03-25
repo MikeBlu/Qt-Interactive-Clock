@@ -19,8 +19,34 @@ Window {
     radius: 360
     clip: true
 
+    function getHandAngleFromCenter(handX, handY) {
+
+      let handVector = {
+        "xVec": handX - (pivotPoint.x + (pivotPoint.width / 2)),
+        "yVec": -(handY - (pivotPoint.y + (pivotPoint.height / 2)))
+      }, baseHandVector = {
+        "xVec": (clockBase.width / 2),
+        "yVec": 0
+      }
+      handVector["normalized"] = (Math.sqrt(Math.pow(handVector["xVec"],
+                                                     2) + Math.pow(
+                                              handVector["yVec"], 2)))
+      baseHandVector["normalized"] = (Math.sqrt(Math.pow(
+                                                  baseHandVector["xVec"],
+                                                  2) + Math.pow(
+                                                  baseHandVector["yVec"], 2)))
+
+      let dotProduct = (handVector["xVec"] * baseHandVector["xVec"])
+          + (handVector["yVec"] * baseHandVector["yVec"])
+      let angle = Math.acos(// -cos is expensive, sheesh
+                            dotProduct / (handVector["normalized"] * baseHandVector["normalized"]))
+      angle = angle * (180 / Math.PI)
+      return (handVector["yVec"] > 0) ? (-angle) : (angle)
+    }
+
     Rectangle {
       id: minuteHand
+      property alias rotationAngle: minuteRotation.angle
       z: 1
       width: (parent.width / 2.2)
       height: (parent.height / 80)
@@ -28,31 +54,34 @@ Window {
       y: (parent.height / 2) - (minuteHand.height / 2)
       color: "grey"
       transform: Rotation {
+        id: minuteRotation
         origin.y: minuteHand.height / 2
-        angle: -90
+        angle: 0
       }
-      Rectangle {
-        id: minuteControl
-        x: parent.width / 1.2
-        y: 0
-        z: 1
-        width: (parent.parent.height / 10)
-        height: width
-        color: "transparent"
-        border.color: "grey"
-        radius: 360
-        MouseArea {
-          anchors.fill: parent
-          acceptedButtons: Qt.LeftButton | Qt.RightButton
-          onClicked: mouse => {
-                       console.log("minute control clicked")
-                     } // handle Click-and-drag
-        }
+    }
+    Rectangle {
+      id: minuteControl
+      x: minuteHand.x + minuteHand.width
+      y: minuteHand.y - (minuteHand.height / 2)
+      z: 1
+      width: (parent.parent.height / 10)
+      height: width
+      color: "transparent"
+      border.color: "grey"
+      onXChanged: () => {
+                    minuteHand.rotationAngle = parent.getHandAngleFromCenter(
+                      x + (width / 2), y + (height / 2))
+                  }
+      radius: 360
+      MouseArea {
+        anchors.fill: parent
+        drag.target: parent
       }
     }
 
     Rectangle {
       id: hourHand
+      property alias rotationAngle: hourRotation.angle
       z: 1
       width: (parent.width / 4)
       height: (parent.height / 20)
@@ -60,32 +89,37 @@ Window {
       y: (parent.height / 2) - (hourHand.height / 2)
       color: "grey"
       transform: Rotation {
+        id: hourRotation
         origin.y: hourHand.height / 2
-        angle: -90
+        angle: 0
       }
       radius: 40
-      Rectangle {
-        id: hourControl
-        x: parent.width / 1.5
-        y: 0
-        z: 1
-        width: (parent.parent.height / 10)
-        height: width
-        color: "transparent"
-        border.color: "grey"
-        radius: 360
-        MouseArea {
-          anchors.fill: parent
-          drag.target: parent
-        }
+    }
+    Rectangle {
+      id: hourControl
+      x: hourHand.x + hourHand.width
+      y: hourHand.y - (hourHand.height / 2)
+      z: 1
+      width: (parent.height / 10)
+      height: width
+      color: "transparent"
+      border.color: "grey"
+      onXChanged: () => {
+                    hourHand.rotationAngle = parent.getHandAngleFromCenter(
+                      x + (width / 2), y + (height / 2))
+                  }
+      radius: 360
+      MouseArea {
+        anchors.fill: parent
+        drag.target: parent
       }
     }
 
     Rectangle {
       id: probe
-      x: clockBase.x
-      y: clockBase.y
-      z: 2
+      x: parent.x + (parent.width / 2)
+      y: parent.y + (parent.height / 2)
+      z: 3
       width: 5
       height: 5
       color: "red"
