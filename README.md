@@ -5,3 +5,6 @@ the functionality is accomplished:
 - Without the use of the Image element
 - Without the use of QtQuick.Controls module
 - Using Rectangle, Repeater, Text, MouseArea components where applicable
+
+Note
+: There aren't source or qml sub-directories in the project since QT Creator doesn't seem to have created any, everything is contained in the same directory.
