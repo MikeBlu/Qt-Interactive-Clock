@@ -7,4 +7,4 @@ the functionality is accomplished:
 - Using Rectangle, Repeater, Text, MouseArea components where applicable
 
 Note
-: There aren't source or qml sub-directories in the project since QT Creator doesn't seem to have created any, everything is contained in the same directory.
+> There aren't source or qml sub-directories in the project since QT Creator doesn't seem to have created any, everything is contained in the same directory.
