@@ -18,8 +18,6 @@ Window {
     border.width: parent.width / 25
     radius: 360
 
-    // you could have the clock maintain hand position if you save the x,y of the respective controls
-    // and loaded them on Window Component resize
     function getHandAngleFromCenter(handX, handY) {
 
       let handVector = {
@@ -39,8 +37,8 @@ Window {
 
       let dotProduct = (handVector["xVec"] * baseHandVector["xVec"])
           + (handVector["yVec"] * baseHandVector["yVec"])
-      let angle = Math.acos(// note: cos^(-1) is expensive
-                            dotProduct / (handVector["normalized"] * baseHandVector["normalized"]))
+      let angle = Math.acos(
+            dotProduct / (handVector["normalized"] * baseHandVector["normalized"]))
       angle = angle * (180 / Math.PI)
       return (handVector["yVec"] > 0) ? (-angle) : (angle)
     }
