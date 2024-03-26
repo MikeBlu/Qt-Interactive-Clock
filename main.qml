@@ -17,8 +17,9 @@ Window {
     border.color: "black"
     border.width: parent.width / 25
     radius: 360
-    clip: true
 
+    // you could have the clock maintain hand position if you save the x,y of the respective controls
+    // and loaded them on Window Component resize
     function getHandAngleFromCenter(handX, handY) {
 
       let handVector = {
@@ -38,7 +39,7 @@ Window {
 
       let dotProduct = (handVector["xVec"] * baseHandVector["xVec"])
           + (handVector["yVec"] * baseHandVector["yVec"])
-      let angle = Math.acos(// cos^(-1) is expensive, sheesh
+      let angle = Math.acos(// note: cos^(-1) is expensive
                             dotProduct / (handVector["normalized"] * baseHandVector["normalized"]))
       angle = angle * (180 / Math.PI)
       return (handVector["yVec"] > 0) ? (-angle) : (angle)
@@ -64,23 +65,25 @@ Window {
       x: pivotPoint.x
       y: pivotPoint.y - (minuteHand.width)
       z: 1
-      width: (parent.parent.height / 10)
+      width: (parent.width / 10)
       height: width
       color: "transparent"
       border.color: "grey"
-      onXChanged: () => {
-                    minuteHand.rotationAngle = parent.getHandAngleFromCenter(
-                      x + (width / 2), y + (height / 2))
-                  }
-      Component.onCompleted: () => {
-                               minuteHand.rotationAngle = parent.getHandAngleFromCenter(
-                                 x + (width / 2), y + (height / 2))
-                             }
-
+      function handleDrag() {
+        minuteHand.rotationAngle = parent.getHandAngleFromCenter(
+              x + (width / 2), y + (height / 2))
+      }
+      onXChanged: handleDrag()
+      onYChanged: handleDrag()
+      Component.onCompleted: handleDrag()
       radius: 360
       MouseArea {
         anchors.fill: parent
         drag.target: parent
+        drag.minimumX: pivotPoint.x - (clockBase.width / 2)
+        drag.minimumY: pivotPoint.y - (clockBase.width / 2)
+        drag.maximumX: pivotPoint.x + (clockBase.width / 2)
+        drag.maximumY: pivotPoint.y + (clockBase.width / 2)
       }
     }
 
@@ -105,34 +108,26 @@ Window {
       x: pivotPoint.x
       y: pivotPoint.y - (hourHand.width)
       z: 1
-      width: (parent.height / 10)
+      width: (parent.width / 10)
       height: width
       color: "transparent"
       border.color: "grey"
-      onXChanged: () => {
-                    hourHand.rotationAngle = parent.getHandAngleFromCenter(
-                      x + (width / 2), y + (height / 2))
-                  }
-      Component.onCompleted: () => {
-                               hourHand.rotationAngle = parent.getHandAngleFromCenter(
-                                 x + (width / 2), y + (height / 2))
-                             }
+      function handleDrag() {
+        hourHand.rotationAngle = parent.getHandAngleFromCenter(x + (width / 2),
+                                                               y + (height / 2))
+      }
+      onXChanged: handleDrag()
+      onYChanged: handleDrag()
+      Component.onCompleted: handleDrag()
       radius: 360
       MouseArea {
         anchors.fill: parent
         drag.target: parent
+        drag.minimumX: pivotPoint.x - (clockBase.width / 2)
+        drag.minimumY: pivotPoint.y - (clockBase.width / 2)
+        drag.maximumX: pivotPoint.x + (clockBase.width / 2)
+        drag.maximumY: pivotPoint.y + (clockBase.width / 2)
       }
-    }
-
-    Rectangle {
-      id: probe
-      x: parent.x + (parent.width / 2)
-      y: parent.y + (parent.height / 2)
-      z: 3
-      width: 5
-      height: 5
-      color: "red"
-      radius: 360
     }
 
     Rectangle {
