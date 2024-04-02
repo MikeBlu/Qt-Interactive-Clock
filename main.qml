@@ -68,14 +68,19 @@ Window {
       color: "transparent"
       border.color: "grey"
       function handleDrag() {
-        minuteHand.rotationAngle = parent.getHandAngleFromCenter(
-              x + (width / 2), y + (height / 2))
+        let newAngle = parent.getHandAngleFromCenter(x + (width / 2),
+                                                     y + (height / 2))
+        let delta = (newAngle - minuteHand.rotationAngle)
+        // hourHand.rotationAngle += delta / 12
+        // hourHand.rotationAngle += 1 / 12
+        minuteHand.rotationAngle = newAngle
       }
       onXChanged: handleDrag()
       onYChanged: handleDrag()
-      Component.onCompleted: handleDrag()
+      // Component.onCompleted: handleDrag()
       radius: 360
       MouseArea {
+        id: minuteDragArea
         anchors.fill: parent
         drag.target: parent
         drag.minimumX: pivotPoint.x - (clockBase.width / 2)
@@ -111,14 +116,18 @@ Window {
       color: "transparent"
       border.color: "grey"
       function handleDrag() {
-        hourHand.rotationAngle = parent.getHandAngleFromCenter(x + (width / 2),
-                                                               y + (height / 2))
+        let newAngle = parent.getHandAngleFromCenter(x + (width / 2),
+                                                     y + (height / 2))
+        let delta = (newAngle - hourHand.rotationAngle)
+        minuteHand.rotationAngle += delta * 12
+        hourHand.rotationAngle = newAngle
       }
       onXChanged: handleDrag()
       onYChanged: handleDrag()
-      Component.onCompleted: handleDrag()
+      // Component.onCompleted: handleDrag()
       radius: 360
       MouseArea {
+        id: hourDragArea
         anchors.fill: parent
         drag.target: parent
         drag.minimumX: pivotPoint.x - (clockBase.width / 2)
