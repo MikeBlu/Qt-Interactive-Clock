@@ -9,6 +9,71 @@ Window {
   color: "gainsboro"
 
   Rectangle {
+    id: visibilityToggleHour
+    width: 60
+    height: 30
+    color: "red"
+    anchors.top: parent.top
+    anchors.left: parent.left
+  }
+
+  Rectangle {
+    id: visibilityToggleMinute
+    width: 60
+    height: 30
+    color: "blue"
+    anchors.top: parent.top
+    anchors.right: parent.right
+  }
+
+  Rectangle {
+    id: visibilityToggleControls
+    width: 60
+    height: 30
+    color: "green"
+    anchors.bottom: colorSelector.top
+    anchors.left: parent.left
+  }
+
+  Grid {
+    id: colorSelector
+    rows: 1
+    columns: 4
+    width: parent.width / 15
+    height: parent.width / 20
+    spacing: width / 5
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    Repeater {
+      model: 4
+      anchors.left: parent.left
+      delegate: Rectangle {
+        height: colorSelector.height
+        width: height
+        color: (() => {
+                  switch (index) {
+                    case 0:
+                    return "black"
+                    case 1:
+                    return "blue"
+                    case 2:
+                    return "red"
+                    case 3:
+                    return "green"
+                  }
+                })()
+        MouseArea {
+          anchors.fill: parent
+          onClicked: {
+            clockBase.border.color = color
+          }
+        }
+        radius: 360
+      }
+    }
+  }
+
+  Rectangle {
     id: clockBase
     anchors.centerIn: parent
     width: parent.width - (parent.width * 0.1)
@@ -137,6 +202,22 @@ Window {
       }
     }
 
+    Text {
+      id: digitalTime
+      color: "black"
+      z: 3
+      text: (() => {
+               var trueValue = Math.floor(hourHand.rotationAngle / 30) + 3
+               if (trueValue > 0)
+               return trueValue
+               else
+               return (12 + trueValue)
+             })()
+      font.pixelSize: 12
+      anchors.bottom: pivotPoint.top
+      anchors.horizontalCenter: pivotPoint.horizontalCenter
+    }
+
     Rectangle {
       id: pivotPoint
       z: 2
@@ -165,7 +246,7 @@ Window {
         }
         height: (index % 5 == 0) ? (parent.width / 10) : (parent.width / 12)
         width: (index % 5 == 0) ? (parent.width / 100) : (parent.width / 130)
-        color: "black"
+        color: clockBase.border.color
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         transform: Rotation {
