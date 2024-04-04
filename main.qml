@@ -8,31 +8,112 @@ Window {
   title: qsTr("Hello World")
   color: "gainsboro"
 
-  Rectangle {
-    id: visibilityToggleHour
-    width: 60
-    height: 30
-    color: "red"
-    anchors.top: parent.top
-    anchors.left: parent.left
+  // Widgets //
+  Component {
+    id: itemToggle
+    Rectangle {
+      property string flowDirection: "to-right"
+      property var onToggled: {
+        return
+      }
+      property alias annotation: annotation.text
+      color: "transparent"
+      Rectangle {
+        id: statusButton
+        width: parent.width / 2
+        height: parent.height
+        border.color: "black"
+        border.width: 5
+        radius: 15
+        anchors.left: (parent.flowDirection === "to-left") ? (annotation.right) : (undefined)
+        anchors.leftMargin: (parent.flowDirection === "to-left") ? (10) : (undefined)
+        Text {
+          id: status
+          text: "OFF"
+          font.pixelSize: parent.width / 2.5
+          font.bold: true
+          anchors.centerIn: parent
+        }
+        MouseArea {
+          id: clickArea
+          anchors.fill: parent
+          onClicked: {
+            if (status.text === "OFF") {
+              status.text = "ON"
+              onToggled(false)
+            } else {
+              status.text = "OFF"
+              onToggled(true)
+            }
+          }
+        }
+      }
+      Text {
+        id: annotation
+        text: "text"
+        anchors.verticalCenter: statusButton.verticalCenter
+        anchors.left: (parent.flowDirection === "to-right") ? (statusButton.right) : (undefined)
+        anchors.leftMargin: (parent.flowDirection === "to-right") ? (10) : (undefined)
+      }
+    }
   }
 
-  Rectangle {
+  Loader {
+    id: visibilityToggleHour
+    sourceComponent: itemToggle
+    width: parent.width / 5
+    height: parent.height / 10
+    anchors.top: parent.top
+    anchors.left: parent.left
+    onLoaded: {
+      item.annotation = "Hour Hand"
+      item.onToggled = isOn => {
+        if (isOn)
+        hourHand.visible = true
+        else
+        hourHand.visible = false
+      }
+    }
+  }
+
+  Loader {
     id: visibilityToggleMinute
-    width: 60
-    height: 30
-    color: "blue"
+    sourceComponent: itemToggle
+    width: visibilityToggleHour.width
+    height: visibilityToggleHour.height
     anchors.top: parent.top
     anchors.right: parent.right
+    onLoaded: {
+      item.annotation = "Minute Hand"
+      item.flowDirection = "to-left"
+      item.onToggled = isOn => {
+        if (isOn)
+        minuteHand.visible = true
+        else
+        minuteHand.visible = false
+      }
+    }
   }
 
-  Rectangle {
+  Loader {
     id: visibilityToggleControls
-    width: 60
-    height: 30
-    color: "green"
+    sourceComponent: itemToggle
+    width: visibilityToggleHour.width
+    height: visibilityToggleHour.height
     anchors.bottom: colorSelector.top
     anchors.left: parent.left
+    onLoaded: {
+      item.annotation = "Control Lines"
+      item.onToggled = isOn => {
+        if (isOn) {
+          minuteControl.visible = true
+          hourControl.visible = true
+        } else {
+          minuteControl.visible = false
+          hourControl.visible = false
+        }
+      }
+    }
   }
 
   Grid {
@@ -64,15 +145,16 @@ Window {
                 })()
         MouseArea {
           anchors.fill: parent
-          onClicked: {
-            clockBase.border.color = color
-          }
+          onClicked: () => {
+                       clockBase.border.color = color
+                     }
         }
         radius: 360
       }
     }
   }
 
+  // Everything under here is the clock //
   Rectangle {
     id: clockBase
     anchors.centerIn: parent
