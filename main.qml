@@ -23,7 +23,7 @@ Window {
         width: parent.width / 2
         height: parent.height
         border.color: "black"
-        border.width: 5
+        border.width: parent.width / 20
         radius: 15
         anchors.left: (parent.flowDirection === "to-left") ? (annotation.right) : (undefined)
         anchors.leftMargin: (parent.flowDirection === "to-left") ? (10) : (undefined)
@@ -51,6 +51,7 @@ Window {
       Text {
         id: annotation
         text: "text"
+        font.pixelSize: parent.width / 15
         anchors.verticalCenter: statusButton.verticalCenter
         anchors.left: (parent.flowDirection === "to-right") ? (statusButton.right) : (undefined)
         anchors.leftMargin: (parent.flowDirection === "to-right") ? (10) : (undefined)
@@ -147,6 +148,7 @@ Window {
           anchors.fill: parent
           onClicked: () => {
                        clockBase.border.color = color
+                       minuteHand.color = color
                      }
         }
         radius: 360
@@ -198,7 +200,7 @@ Window {
       height: (parent.height / 80)
       x: parent.width / 2
       y: (parent.height / 2) - (minuteHand.height / 2)
-      color: "grey"
+      color: "black"
       transform: Rotation {
         id: minuteRotation
         origin.y: minuteHand.height / 2
@@ -224,7 +226,7 @@ Window {
       }
       onXChanged: handleDrag()
       onYChanged: handleDrag()
-      // Component.onCompleted: handleDrag()
+      Component.onCompleted: handleDrag()
       radius: 360
       MouseArea {
         id: minuteDragArea
@@ -245,7 +247,7 @@ Window {
       height: (parent.height / 20)
       x: parent.width / 2
       y: (parent.height / 2) - (hourHand.height / 2)
-      color: "grey"
+      color: "black"
       transform: Rotation {
         id: hourRotation
         origin.y: hourHand.height / 2
@@ -271,7 +273,7 @@ Window {
       }
       onXChanged: handleDrag()
       onYChanged: handleDrag()
-      // Component.onCompleted: handleDrag()
+      Component.onCompleted: handleDrag()
       radius: 360
       MouseArea {
         id: hourDragArea
@@ -284,20 +286,30 @@ Window {
       }
     }
 
-    Text {
-      id: digitalTime
-      color: "black"
+    Rectangle {
       z: 3
-      text: (() => {
-               var trueValue = Math.floor(hourHand.rotationAngle / 30) + 3
-               if (trueValue > 0)
-               return trueValue
-               else
-               return (12 + trueValue)
-             })()
-      font.pixelSize: 12
+      color: "#99FFFFFF"
+      height: parent.width / 10
+      width: parent.width / 5
       anchors.bottom: pivotPoint.top
+      anchors.bottomMargin: 10
       anchors.horizontalCenter: pivotPoint.horizontalCenter
+      Text {
+        id: digitalTime
+        color: "black"
+        text: (() => {
+                 let hourValue = Math.floor(
+                   hourHand.rotationAngle / 30) + 3, minuteValue = Math.floor(
+                   minuteHand.rotationAngle / 6) + 15
+                 if (hourValue <= 0)
+                 hourValue += 12
+                 if (minuteValue <= 0)
+                 minuteValue += 60
+                 return hourValue + ":" + Math.abs(minuteValue % 60)
+               })()
+        font.pixelSize: parent.width / 3
+        anchors.centerIn: parent
+      }
     }
 
     Rectangle {
