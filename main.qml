@@ -84,6 +84,7 @@ Window {
     height: visibilityToggleHour.height
     anchors.top: parent.top
     anchors.right: parent.right
+    anchors.rightMargin: 5
     onLoaded: {
       item.annotation = "Minute Hand"
       item.flowDirection = "to-left"
@@ -92,6 +93,25 @@ Window {
         minuteHand.visible = true
         else
         minuteHand.visible = false
+      }
+    }
+  }
+
+  Loader {
+    id: visibilityToggleDigital
+    sourceComponent: itemToggle
+    width: visibilityToggleHour.width
+    height: visibilityToggleHour.height
+    anchors.bottom: parent.bottom
+    anchors.right: parent.right
+    onLoaded: {
+      item.annotation = "Digital"
+      item.flowDirection = "to-left"
+      item.onToggled = isOn => {
+        if (isOn)
+        digitalTime.visible = true
+        else
+        digitalTime.visible = false
       }
     }
   }
@@ -209,6 +229,7 @@ Window {
     }
     Rectangle {
       id: minuteControl
+      property int delay: 0
       x: pivotPoint.x
       y: pivotPoint.y - (minuteHand.width)
       z: 1
@@ -220,8 +241,7 @@ Window {
         let newAngle = parent.getHandAngleFromCenter(x + (width / 2),
                                                      y + (height / 2))
         let delta = (newAngle - minuteHand.rotationAngle)
-        // hourHand.rotationAngle += delta / 12
-        // hourHand.rotationAngle += 1 / 12
+        hourHand.rotationAngle += ((delta >= 0) ? (1) : (-1)) * (1 / 12)
         minuteHand.rotationAngle = newAngle
       }
       onXChanged: handleDrag()
@@ -287,6 +307,7 @@ Window {
     }
 
     Rectangle {
+      id: digitalTime
       z: 3
       color: "#99FFFFFF"
       height: parent.width / 10
@@ -295,7 +316,6 @@ Window {
       anchors.bottomMargin: 10
       anchors.horizontalCenter: pivotPoint.horizontalCenter
       Text {
-        id: digitalTime
         color: "black"
         text: (() => {
                  let hourValue = Math.floor(
@@ -305,7 +325,8 @@ Window {
                  hourValue += 12
                  if (minuteValue <= 0)
                  minuteValue += 60
-                 return hourValue + ":" + Math.abs(minuteValue % 60)
+                 minuteValue = Math.abs(minuteValue % 60)
+                 return hourValue + ":" + ((minuteValue < 10) ? ("0" + minuteValue) : (minuteValue))
                })()
         font.pixelSize: parent.width / 3
         anchors.centerIn: parent
