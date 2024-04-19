@@ -226,10 +226,19 @@ Window {
         origin.y: minuteHand.height / 2
         angle: 0
       }
+
+      /*
+      Rectangle {
+        id: cPCoordinate
+        z: 5
+        width: 5
+        height: 5
+        color: "red"
+        anchors.right: parent.right
+      } */
     }
     Rectangle {
       id: minuteControl
-      property int delay: 0
       x: pivotPoint.x
       y: pivotPoint.y - (minuteHand.width)
       z: 1
@@ -241,7 +250,7 @@ Window {
         let newAngle = parent.getHandAngleFromCenter(x + (width / 2),
                                                      y + (height / 2))
         let delta = (newAngle - minuteHand.rotationAngle)
-        hourHand.rotationAngle += ((delta >= 0) ? (1) : (-1)) * (1 / 12)
+        hourHand.rotationAngle += (delta >= 0) ? (1 / 12) : (-1 / 12)
         minuteHand.rotationAngle = newAngle
       }
       onXChanged: handleDrag()
