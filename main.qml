@@ -147,23 +147,13 @@ Window {
     anchors.bottom: parent.bottom
     anchors.left: parent.left
     Repeater {
-      model: 4
+      model: ["black", "blue", "red", "green"]
       anchors.left: parent.left
       delegate: Rectangle {
+        required property string modelData
         height: colorSelector.height
         width: height
-        color: (() => {
-                  switch (index) {
-                    case 0:
-                    return "black"
-                    case 1:
-                    return "blue"
-                    case 2:
-                    return "red"
-                    case 3:
-                    return "green"
-                  }
-                })()
+        color: modelData
         MouseArea {
           anchors.fill: parent
           onClicked: () => {
@@ -193,8 +183,8 @@ Window {
         "xVec": handX - (pivotPoint.x + (pivotPoint.width / 2)),
         "yVec": -(handY - (pivotPoint.y + (pivotPoint.height / 2)))
       }, baseHandVector = {
-        "xVec": (clockBase.width / 2),
-        "yVec": 0
+        "xVec": 0,
+        "yVec": (clockBase.height / 2)
       }
       handVector["normalized"] = (Math.sqrt(Math.pow(handVector["xVec"],
                                                      2) + Math.pow(
@@ -209,23 +199,29 @@ Window {
       let angle = Math.acos(
             dotProduct / (handVector["normalized"] * baseHandVector["normalized"]))
       angle = angle * (180 / Math.PI)
-      return (handVector["yVec"] > 0) ? (-angle) : (angle)
+      return (handVector["xVec"] > 0) ? (angle) : (180 + (180 - angle))
+    }
+
+    function getVectorFromAngle(angle) {
+      var angleinRadians = angle * (Math.PI / 180)
+      return [Math.cos(angle), Math.sin(angle)]
     }
 
     Rectangle {
       id: minuteHand
       property alias rotationAngle: minuteRotation.angle
       z: 1
-      width: (parent.width / 2.2)
-      height: (parent.height / 80)
-      x: parent.width / 2
-      y: (parent.height / 2) - (minuteHand.height / 2)
+      width: (parent.width / 80)
+      height: (parent.height / 2.2)
+      x: (parent.width / 2) - (minuteHand.width / 2)
+      y: parent.border.width
       color: "black"
       transform: Rotation {
         id: minuteRotation
-        origin.y: minuteHand.height / 2
-        angle: 0
+        origin.x: (minuteHand.width / 2)
+        origin.y: minuteHand.height
       }
+
 
       /*
       Rectangle {
@@ -237,29 +233,42 @@ Window {
         anchors.right: parent.right
       } */
     }
+
     Rectangle {
       id: minuteControl
       x: pivotPoint.x
-      y: pivotPoint.y - (minuteHand.width)
+      y: pivotPoint.y - (minuteHand.height)
       z: 1
       width: (parent.width / 10)
       height: width
       color: "transparent"
       border.color: "grey"
       function handleDrag() {
+        if (isNaN(hourHand.rotationAngle))
+          hourHand.rotationAngle = 0
         let newAngle = parent.getHandAngleFromCenter(x + (width / 2),
                                                      y + (height / 2))
         let delta = (newAngle - minuteHand.rotationAngle)
-        hourHand.rotationAngle += (delta >= 0) ? (1 / 12) : (-1 / 12)
+        hourHand.rotationAngle += (((delta < -120
+                                     || delta > 120) ? (0) : (delta)) / 12)
+        hourHand.rotationAngle = hourHand.rotationAngle % 360
         minuteHand.rotationAngle = newAngle
       }
       onXChanged: handleDrag()
       onYChanged: handleDrag()
-      Component.onCompleted: handleDrag()
       radius: 360
       MouseArea {
         id: minuteDragArea
         anchors.fill: parent
+
+
+        /*
+        onReleased: () => {
+                      var headingVector = clockBase.getVectorFromAngle(
+                        hourHand.rotationAngle)
+                      hourControl.x = headingVector[0] * (clockBase.width / 2)
+                      hourControl.y = headingVector[1] * (clockBase.width / 2)
+                    } */
         drag.target: parent
         drag.minimumX: pivotPoint.x - (clockBase.width / 2)
         drag.minimumY: pivotPoint.y - (clockBase.width / 2)
@@ -272,37 +281,40 @@ Window {
       id: hourHand
       property alias rotationAngle: hourRotation.angle
       z: 1
-      width: (parent.width / 4)
-      height: (parent.height / 20)
-      x: parent.width / 2
-      y: (parent.height / 2) - (hourHand.height / 2)
+      width: (parent.width / 20)
+      height: (parent.height / 4)
+      x: (parent.width / 2) - (hourHand.width / 2)
+      y: ((parent.height / 2) - hourHand.height)
       color: "black"
       transform: Rotation {
         id: hourRotation
-        origin.y: hourHand.height / 2
-        angle: 0
+        origin.x: hourHand.width / 2
+        origin.y: hourHand.height
       }
       radius: 40
     }
     Rectangle {
       id: hourControl
       x: pivotPoint.x
-      y: pivotPoint.y - (hourHand.width)
+      y: pivotPoint.y - (hourHand.height)
       z: 1
       width: (parent.width / 10)
       height: width
       color: "transparent"
       border.color: "grey"
       function handleDrag() {
+        if (isNaN(minuteHand.rotationAngle))
+          minuteHand.rotationAngle = 0
         let newAngle = parent.getHandAngleFromCenter(x + (width / 2),
                                                      y + (height / 2))
         let delta = (newAngle - hourHand.rotationAngle)
-        minuteHand.rotationAngle += delta * 12
+        minuteHand.rotationAngle += (delta * 12) % 360
+        if (minuteHand.rotationAngle < 0)
+          minuteHand.rotationAngle = 360 - minuteHand.rotationAngle
         hourHand.rotationAngle = newAngle
       }
       onXChanged: handleDrag()
       onYChanged: handleDrag()
-      Component.onCompleted: handleDrag()
       radius: 360
       MouseArea {
         id: hourDragArea
@@ -328,13 +340,12 @@ Window {
         color: "black"
         text: (() => {
                  let hourValue = Math.floor(
-                   hourHand.rotationAngle / 30) + 3, minuteValue = Math.floor(
-                   minuteHand.rotationAngle / 6) + 15
-                 if (hourValue <= 0)
-                 hourValue += 12
-                 if (minuteValue <= 0)
-                 minuteValue += 60
-                 minuteValue = Math.abs(minuteValue % 60)
+                   hourHand.rotationAngle / 30), minuteValue = Math.floor(
+                   minuteHand.rotationAngle / 6)
+                 if (hourValue == 0)
+                 hourValue = 12
+
+                 minuteValue = minuteValue % 60
                  return hourValue + ":" + ((minuteValue < 10) ? ("0" + minuteValue) : (minuteValue))
                })()
         font.pixelSize: parent.width / 3
@@ -367,6 +378,7 @@ Window {
                                      text = (index == 0) ? ("12") : (index / 5)
                                    }
                                  }
+          rotation: -((360 / pins.model) * index)
         }
         height: (index % 5 == 0) ? (parent.width / 10) : (parent.width / 12)
         width: (index % 5 == 0) ? (parent.width / 100) : (parent.width / 130)
@@ -374,7 +386,7 @@ Window {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         transform: Rotation {
-          origin.y: parent.height / 2
+          origin.y: (parent.height / 2)
           origin.x: width / 2
           angle: (360 / pins.model) * index
         }
